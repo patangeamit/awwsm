@@ -46,6 +46,7 @@ public class Main {
     public static void printStatus(String assembly) {
         System.out.println("\n" + assembly + "\n");
         System.out.println("nasm -felf64 test.asm && ld test.o -o test && ./test");
+        System.out.println("nasm -felf64 test.asm && ld test.o -o test && ./test ; echo $?");
     }
 }
 

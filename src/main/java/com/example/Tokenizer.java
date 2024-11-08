@@ -25,7 +25,7 @@ public class Tokenizer {
                 while (true) {
                     charInt = br.read();
                     c = (char) charInt;
-                    if (!Character.isAlphabetic((char) charInt)) {
+                    if (!Character.isAlphabetic(c) && !Character.isDigit(c)) {
                         break;
                     } else {
                         sb.append(c);
