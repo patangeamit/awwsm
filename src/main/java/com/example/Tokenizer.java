@@ -3,135 +3,79 @@ package com.example;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import com.example.Token.TokenType;
+
 public class Tokenizer {
     Token[] tokens = new Token[100];
     int token_index = 0;
-    public Token[] tokenize(BufferedReader br) throws IOException{
 
-
+    public Token token_prog(BufferedReader br) throws IOException {
+        Token head = new Token(TokenType.PROGRAM);
+        Token tail = head;
         while (true) {
             int charInt = br.read();
             char c = (char) charInt;
-            if (charInt== -1){
+            if (charInt == -1) {
                 break;
             }
-            if (Character.isAlphabetic(c)){
+            if (Character.isAlphabetic(c)) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(c);
                 // return 0;
-                while (true){
+                while (true) {
                     charInt = br.read();
                     c = (char) charInt;
-                    if (!Character.isAlphabetic((char) charInt)){
+                    if (!Character.isAlphabetic((char) charInt)) {
                         break;
-                    }else{
+                    } else {
                         sb.append(c);
                     }
                 }
-                Token t = new Token("literal", sb.toString()); 
-                tokens[token_index] = t;
-                token_index ++;
-                // System.out.println("word: "+ sb.toString());
+                Token t = new Token(sb.toString());
+                tail.next = t;
+                tail = t;
             }
-             if(Character.isDigit(c)){
+            if (Character.isDigit(c)) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(c);
-                while (true){
+                while (true) {
                     charInt = br.read();
                     c = (char) charInt;
-                    if(!Character.isDigit((char) charInt)){
+                    if (!Character.isDigit((char) charInt)) {
                         break;
-                    }else{
+                    } else {
                         sb.append(c);
                     }
                 }
-                Token t = new Token("integer", sb.toString()); 
-                tokens[token_index] = t;
-                token_index ++;
-                // System.out.println("digit: " + sb.toString());
+                Token t = new Token(TokenType.INTEGER, sb.toString());
+                tail.next = t;
+                tail = t;
             }
-             if(c == ';'){
-                 Token t = new Token("semicolon"); 
-                 tokens[token_index] = t;
-                 token_index ++;
-                //  System.out.println("semicolon");    
+            if (c == ';') {
+                Token t = new Token(TokenType.SEMICOLON);
+                tail.next = t;
+                tail = t;
+                // System.out.println("semicolon");
             }
-            else if (Character.isWhitespace(c)){
+
+            if (c == '=') {
+                Token t = new Token(TokenType.ASSIGNMENT);
+                tail.next = t;
+                tail = t;
+            }
+            if (c == '(') {
+                Token t = new Token(TokenType.OPEN_PREN);
+                tail.next = t;
+                tail = t;
+            }
+            if (c == ')') {
+                Token t = new Token(TokenType.CLOSE_PREN);
+                tail.next = t;
+                tail = t;
+            } else if (Character.isWhitespace(c)) {
                 // System.out.println("whitespace");
             }
         }
-        return  this.tokens;
-    }
-    public Token token_prog(BufferedReader br) throws IOException{
-        Token head = new Token("PROGRAM");
-        Token tail = head;
-        while (true){
-            int charInt = br.read();
-            char c = (char) charInt;
-            if (charInt== -1){
-                break;
-            }
-            if (Character.isAlphabetic(c)){
-                StringBuilder sb = new StringBuilder();
-                sb.append(c);
-                // return 0;
-                while (true){
-                    charInt = br.read();
-                    c = (char) charInt;
-                    if (!Character.isAlphabetic((char) charInt)){
-                        break;
-                    }else{
-                        sb.append(c);
-                    }
-                }
-                Token t = new Token("literal", sb.toString()); 
-                tail.next = t;
-                tail = t;
-            }
-            if(Character.isDigit(c)){
-                StringBuilder sb = new StringBuilder();
-                sb.append(c);
-                while (true){
-                    charInt = br.read();
-                    c = (char) charInt;
-                    if(!Character.isDigit((char) charInt)){
-                        break;
-                    }else{
-                        sb.append(c);
-                    }
-                }
-                Token t = new Token("integer", sb.toString()); 
-                tail.next = t;
-                tail = t;
-            }
-            if(c == ';'){
-                Token t = new Token("semicolon"); 
-                tail.next = t;
-                tail = t;
-               //  System.out.println("semicolon");    
-            }
-
-            if(c == '='){
-                Token t = new Token("assignment"); 
-                tail.next = t;
-                tail = t;
-            }
-            if(c == '('){
-                Token t = new Token("open_pren");
-                tail.next = t;
-                tail = t;
-            }
-            if(c == ')'){
-                Token t = new Token("close_pren");
-                tail.next = t;
-                tail = t;
-            }
-            else if (Character.isWhitespace(c)){
-               // System.out.println("whitespace");
-            }
-        }
-        Token end = new Token("END");
-        tail.next = end;
         return head;
     }
 }
