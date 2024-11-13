@@ -55,7 +55,6 @@ public class Tokenizer {
                 Token t = new Token(TokenType.SEMICOLON);
                 tail.next = t;
                 tail = t;
-                // System.out.println("semicolon");
             }
 
             if (c == '=') {
@@ -72,7 +71,28 @@ public class Tokenizer {
                 Token t = new Token(TokenType.CLOSE_PREN);
                 tail.next = t;
                 tail = t;
-            } else if (Character.isWhitespace(c)) {
+            }
+            if (c == '+') {
+                Token t = new Token(TokenType.PLUS);
+                tail.next = t;
+                tail = t;
+            }
+            if (c == '-') {
+                Token t = new Token(TokenType.MINUS);
+                tail.next = t;
+                tail = t;
+            }
+            if (c == '*') {
+                Token t = new Token(TokenType.STAR);
+                tail.next = t;
+                tail = t;
+            }
+            if (c == '/') {
+                Token t = new Token(TokenType.FORWARD_SLASH);
+                tail.next = t;
+                tail = t;
+            }
+            if (Character.isWhitespace(c)) {
                 // System.out.println("whitespace");
             }
         }

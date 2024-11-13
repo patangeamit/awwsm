@@ -1,83 +1,10 @@
 package com.example;
 
 import java.lang.StackWalker.Option;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-
 import com.example.Token.TokenType;
 
 public class Parser {
-    public interface Node {
-    }
-
-    public class NodeProg implements Node {
-        List<NodeStmt> statements = new ArrayList<>();
-
-        NodeProg() {
-        }
-
-        NodeProg(List<NodeStmt> s) {
-            statements = s;
-        }
-    }
-
-    public class NodeStmt implements Node {
-        Node var; // can be NodeStmtExit or NodeStmtLet
-
-        NodeStmt(Node var) {
-            this.var = var;
-        }
-    }
-
-    public class NodeStmtExit implements Node {
-        // exit <expr> ;
-        NodeExpr expr;
-
-        NodeStmtExit(NodeExpr e) {
-            expr = e;
-        }
-    }
-
-    public class NodeStmtLet implements Node {
-        // let <idnt> = <expr> ;
-        Token idnt;
-        NodeExpr expr;
-
-        NodeStmtLet(Token idnt, NodeExpr expr) {
-            this.idnt = idnt;
-            this.expr = expr;
-        }
-    }
-
-    public class NodeExpr implements Node {
-        // <var>
-        Node var; // can be NodeExprIdnt or NodeExprInt
-
-        NodeExpr(Node var) {
-            this.var = var;
-        }
-    }
-
-    public class NodeExprInt implements Node {
-        // <tokenInt>
-        Token tokenInt;
-
-        NodeExprInt(Token t) {
-            tokenInt = t;
-        }
-    }
-
-    public class NodeExprIdnt implements Node {
-        // <tokenIdnt>
-        Token tokenIdnt;
-
-        NodeExprIdnt(Token t) {
-            tokenIdnt = t;
-        }
-
-    }
-
     Token curr;
 
     Optional<NodeProg> parseProg(Token head) {
@@ -92,6 +19,7 @@ public class Parser {
                 // consume return token
                 consumeToken(2);
                 Optional<NodeExpr> expr = parseExpr();
+
                 if (expr.isEmpty())
                     return Optional.empty(); // err: invalid expression
                 if (peekToken().isPresent() & peekToken().get().type == TokenType.SEMICOLON) {
@@ -132,22 +60,109 @@ public class Parser {
     }
 
     Optional<NodeExpr> parseExpr() {
-        // int
-        if (peekToken().isPresent() && peekToken().get().type == TokenType.INTEGER) {
+        Optional<Node> var = parseAddSub();
+        if (var.isPresent()) {
+            return Optional.of((NodeExpr) var.get());
+        }
+        return Optional.empty();
+    }
 
-            NodeExpr expr = new NodeExpr(new NodeExprInt(consumeToken(3)));
-            return Optional.of(expr);
+    Optional<Node> parseAddSub() {
+        Node left = parseFactor().get();
+        while (peekToken().isPresent()
+                && (peekToken().get().type == TokenType.PLUS | peekToken().get().type == TokenType.MINUS)) {
+            Token operator = consumeToken();
+            Node right = parseFactor().get();
+            left = new NodeExpr(new NodeExprBin(operator, left, right));
         }
-        // identifier
-        else if (peekToken().isPresent() && peekToken().get().type == TokenType.INDENTIFIER) {
-            NodeExpr expr = new NodeExpr(new NodeExprIdnt(consumeToken()));
-            return Optional.of(expr);
+        if (left instanceof NodeExpr)
+            return Optional.of(left);
+        return Optional.of(new NodeExpr(left));
+    }
+
+    Optional<Node> parseFactor() {
+        Node left = parseTerm().get();
+        while (peekToken().isPresent()
+                && (peekToken().get().type == TokenType.STAR | peekToken().get().type == TokenType.FORWARD_SLASH)) {
+            Token operator = consumeToken();
+            Node right = parseTerm().get();
+            left = new NodeExpr(new NodeExprBin(operator, left, right));
         }
-        // fail
-        else {
-            return Optional.empty(); // err: empty expression
+        if (left instanceof NodeExpr)
+            return Optional.of(left);
+        return Optional.of(new NodeExpr(left));
+    }
+
+    Optional<Node> parseTerm() {
+        if (peekToken().isPresent() && peekToken().get().type == TokenType.OPEN_PREN) {
+            consumeToken(); // consume (
+            Optional<Node> expr = parseAddSub();
+            if (expr.isPresent() && peekToken().get().type == TokenType.CLOSE_PREN) {
+                consumeToken(); // consume )
+                return expr;
+            } else {
+                return Optional.empty();
+            }
+        } else if (peekToken().isPresent() && peekToken().get().type == TokenType.INDENTIFIER) {
+            Node expTermIdnt = new NodeExprTerm(new NodeExprTermIdnt(consumeToken()));
+            return Optional.of(expTermIdnt);
+        } else if (peekToken().isPresent() && peekToken().get().type == TokenType.INTEGER) {
+            Node expTermInt = new NodeExprTerm(new NodeExprTermInt(consumeToken()));
+            return Optional.of(expTermInt);
+        } else {
+            return Optional.empty();
         }
     }
+    // Optional<NodeExpr> parseExpr() {
+    // Optional<NodeExprBin> exprBin = parseExprBin();
+    // if (exprBin.isPresent()) {
+    // return Optional.of(new NodeExpr(exprBin.get()));
+    // } else {
+    // // int
+    // if (peekToken().isPresent() && peekToken().get().type == TokenType.INTEGER) {
+
+    // NodeExpr expr = new NodeExpr(new NodeExprInt(consumeToken(3)));
+    // return Optional.of(expr);
+    // }
+    // // identifier
+    // else if (peekToken().isPresent() && peekToken().get().type ==
+    // TokenType.INDENTIFIER) {
+    // NodeExpr expr = new NodeExpr(new NodeExprIdnt(consumeToken()));
+    // return Optional.of(expr);
+    // }
+    // // fail
+    // else {
+    // return Optional.empty(); // err: empty expression
+    // }
+    // }
+    // }
+
+    // Optional<NodeExprBin> parseExprBin() {
+    // if (peekToken().isPresent() && peekToken(1).isPresent()) {
+    // if (peekToken(1).get().type == TokenType.PLUS) {
+    // // consume lhs
+    // Token lhsToken = consumeToken();
+    // NodeExpr lhs;
+    // if (lhsToken.type == TokenType.INDENTIFIER) {
+    // lhs = new NodeExpr(new NodeExprIdnt(lhsToken));
+
+    // } else if (lhsToken.type == TokenType.INTEGER) {
+    // lhs = new NodeExpr(new NodeExprInt(lhsToken));
+    // } else {
+    // lhs = null;
+    // return Optional.empty(); // err: unknown token in expr
+    // }
+    // // consume +
+    // consumeToken();
+    // Optional<NodeExpr> rhs = parseExpr();
+    // if (rhs.isPresent()) {
+    // NodeExprBin exprBin = new NodeExprBin(new NodeExprBinAdd(lhs, rhs.get()));
+    // } else {
+    // return Optional.empty();
+    // }
+    // }
+    // }
+    // }
 
     Optional<Token> peekToken() {
         return peekToken(0);
@@ -177,5 +192,4 @@ public class Parser {
         return temp;
 
     }
-
 }

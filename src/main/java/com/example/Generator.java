@@ -1,18 +1,8 @@
 package com.example;
 
-import com.example.Parser.Node;
-import com.example.Parser.NodeExpr;
-import com.example.Parser.NodeExprIdnt;
-import com.example.Parser.NodeExprInt;
-import com.example.Parser.NodeProg;
-import com.example.Parser.NodeStmt;
-import com.example.Parser.NodeStmtExit;
-import com.example.Parser.NodeStmtLet;
-
 import java.util.HashMap;
-import java.util.Map;
 
-import com.example.Parser;
+import com.example.Token.TokenType;
 
 public class Generator {
     StringBuilder assembly = new StringBuilder();
@@ -69,17 +59,41 @@ public class Generator {
     }
 
     void gen_expr(NodeExpr expr) {
+        if (expr.var instanceof NodeExprTerm) {
+            gen_term((NodeExprTerm) expr.var);
+        } else if (expr.var instanceof NodeExprBin) {
+            gen_binary((NodeExprBin) expr.var);
+        }
+    }
+
+    void gen_binary(NodeExprBin exprBin) {
+        gen_expr((NodeExpr) exprBin.right);
+        gen_expr((NodeExpr) exprBin.left);
+        if (exprBin.tokenOp.type == TokenType.PLUS) {
+            pop("rax");
+            pop("rbx");
+            assembly.append("    add rax, rbx\n");
+            push("rax");
+        } else if (exprBin.tokenOp.type == TokenType.MINUS) {
+            pop("rax");
+            pop("rbx");
+            assembly.append("    sub rax, rbx\n");
+            push("rax");
+        }
+    }
+
+    void gen_term(NodeExprTerm exprTerm) {
         // pushes the value (or a variable's value) on top of the stack
-        if (expr.var instanceof NodeExprInt) {
-            NodeExprInt exprInt = (NodeExprInt) expr.var;
+        if (exprTerm.var instanceof NodeExprTermInt) {
+            NodeExprTermInt exprInt = (NodeExprTermInt) exprTerm.var;
             assembly.append("    mov rax, " + exprInt.tokenInt.value + "\n");
             push("rax");
-        } else if (expr.var instanceof NodeExprIdnt) {
+        } else if (exprTerm.var instanceof NodeExprTermIdnt) {
             // expr is an identifier
             // find the identifier's value's stack position from the HashMap, calculates the
             // difference between the stack size and multiplies it with 8 (because a stack
             // element is 8bytes long)
-            NodeExprIdnt exprIdnt = (NodeExprIdnt) expr.var;
+            NodeExprTermIdnt exprIdnt = (NodeExprTermIdnt) exprTerm.var;
             if (!variables.containsKey(exprIdnt.tokenIdnt.value)) {
                 System.out.println("Err: Undeclared variable '" + exprIdnt.tokenIdnt.value + "'");
                 // err: undeclared identifier
@@ -89,4 +103,5 @@ public class Generator {
             }
         }
     }
+
 }

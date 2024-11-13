@@ -30,7 +30,11 @@ class Token {
         SEMICOLON,
         ASSIGNMENT,
         OPEN_PREN,
-        CLOSE_PREN
+        CLOSE_PREN,
+        PLUS,
+        MINUS,
+        STAR,
+        FORWARD_SLASH
     }
 
     public Token(String keyword) {

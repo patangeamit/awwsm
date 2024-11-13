@@ -6,20 +6,16 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.StackWalker.Option;
 import java.util.Optional;
-
-import com.example.Parser.NodeProg;
-import com.example.Parser.NodeStmtExit;
 
 public class Main {
 
     // Source Code -> Tokenizer -> Parser -> Assembler -> Output;
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws FileNotFoundException { // PROGRAM STARTS HERE
         Tokenizer tokenizer = new Tokenizer();
         StringBuilder outputBuilder = new StringBuilder();
         Parser parser = new Parser();
-        try (BufferedReader br = new BufferedReader(new FileReader("test.aww"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("main.aww"))) {
 
             Token head = tokenizer.token_prog(br);
             Generator generator = new Generator();
@@ -34,7 +30,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("test.asm"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("main.asm"))) {
             writer.write(outputBuilder.toString());
         } catch (IOException e) {
             e.printStackTrace();
@@ -45,8 +41,8 @@ public class Main {
 
     public static void printStatus(String assembly) {
         System.out.println("\n" + assembly + "\n");
-        System.out.println("nasm -felf64 test.asm && ld test.o -o test && ./test");
-        System.out.println("nasm -felf64 test.asm && ld test.o -o test && ./test ; echo $?");
+        System.out.println("nasm -felf64 main.asm && ld main.o -o main && ./main");
+        System.out.println("nasm -felf64 main.asm && ld main.o -o main && ./main ; echo $?");
     }
 }
 
