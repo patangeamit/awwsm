@@ -86,6 +86,12 @@ public class Parser {
                 && (peekToken().get().type == TokenType.STAR | peekToken().get().type == TokenType.FORWARD_SLASH)) {
             Token operator = consumeToken();
             Node right = parseTerm().get();
+            if (!(left instanceof NodeExpr)) {
+                left = new NodeExpr(left);
+            }
+            if (!(right instanceof NodeExpr)) {
+                right = new NodeExpr(right);
+            }
             left = new NodeExpr(new NodeExprBin(operator, left, right));
         }
         if (left instanceof NodeExpr)

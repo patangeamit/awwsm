@@ -79,6 +79,16 @@ public class Generator {
             pop("rbx");
             assembly.append("    sub rax, rbx\n");
             push("rax");
+        } else if (exprBin.tokenOp.type == TokenType.STAR) {
+            pop("rax");
+            pop("rbx");
+            assembly.append("    mul rbx\n");
+            push("rax");
+        } else if (exprBin.tokenOp.type == TokenType.FORWARD_SLASH) {
+            pop("rax");
+            pop("rbx");
+            assembly.append("    div rbx\n");
+            push("rax");
         }
     }
 
